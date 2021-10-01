@@ -4,4 +4,4 @@
 
 github : [gh-pages](http://peipenny.github.io/CGhws/index.html)
 
-Email : [penny5462254@gmail.com]<penny5462254@gmail.com>
+Email : <penny5462254@gmail.com>
