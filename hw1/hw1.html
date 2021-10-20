@@ -8,7 +8,7 @@ body {
 
 #info {
   position: absolute;
-  top: 30px;
+  top: 20px;
   width: 100%;
   padding: 10px;
   text-align: center;
@@ -19,12 +19,19 @@ body {
 
 <body>
 <div id="info">Homework 1
-<br>
-<br>
-<button id='pause'> Pause </button>
-<button id='restart'> Restart </button>
-<br>
+<br><br>
+<button id='style'> Style </button>
+<button id='angle'> +10 </button>
+<button id='start'> start </button>
+<button id='reset'> reset </button>
 
+<p id="second"> 60 seconds
+<br><br>
+
+<br>
+<audio id="play" style="display:none">
+<source src="11010.wav" type='audio/wav'>
+</audio>
 <script src="https://threejs.org/build/three.min.js"></script>
 <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -33,14 +40,27 @@ body {
 
 var renderer, scene, camera;
 var pointer , clock ,angle = 0 ;
-var tg = 0;
+var style = 0 ,tg = 0 , start = 0 ,second = 60;
+var play;
+var count = 10 ;
 
-$('#pause').click(function(){
-	tg= 1;
+$('#style').click(function(){
+	style =! style ;
 });
 
-$('#restart').click(function(){
-	tg= 0;
+$('#angle').click(function(){
+	angle += 2*Math.PI/6;
+	second += 10;
+});
+
+$('#start').click(function(){
+	start =! start ;
+});
+
+$('#reset').click(function(){
+	second = 60 ;
+	angle = 0;
+	count = 10;
 });
 
 
@@ -49,8 +69,11 @@ animate();
 
 function init () {
 	
+	play = document.getElementById ('play');
+	
 	renderer = new THREE.WebGLRenderer();
 	document.body.appendChild (renderer.domElement);
+	
 	var width = window.innerWidth;
 	var height = window.innerHeight;
 	renderer.setSize (width, height);
@@ -68,27 +91,32 @@ function init () {
 	window.addEventListener('resize', onWindowResize, false);
 	///////////////////////////////////////////////////////////////
 	
+		
+	let loader = new THREE.TextureLoader();
+	let texture = loader.load ("https://i.imgur.com/YGJQHhS.png");
+	
 	var circleGeometry = new THREE.CircleGeometry( 8, 32 );
-	var circleMaterial = new THREE.MeshBasicMaterial(); 
+	var circleMaterial = new THREE.MeshBasicMaterial({map:texture}); 
 	var circle = new THREE.Mesh (circleGeometry, circleMaterial);
 	///
-	var boxGeometry = new THREE.BoxGeometry( 1, 1.5, 0.1 );
+	var boxGeometry = new THREE.BoxGeometry( 1, 0.75, 0.1 );
 	var boxMaterial = new THREE.MeshBasicMaterial({color: 0x000000}); 
 	var box = new THREE.Mesh (boxGeometry, boxMaterial);
-	box.position.set(0,8,0);
+	box.position.set(0,8.3,0);
 	///
-	var box2Geometry = new THREE.BoxGeometry( 1.5, 5, 0.1 );
-	var box2Material = new THREE.MeshBasicMaterial({color: 0x853434}); 
+	var box2Geometry = new THREE.BoxGeometry( 0.75, 5, 0.1 );
+	var box2Material = new THREE.MeshBasicMaterial({color: 0x000000}); 
 	var box2 = new THREE.Mesh (box2Geometry, box2Material);
 	box2.position.set(0,2.5,0);
 	///
-	var circle2Geometry = new THREE.CircleGeometry( 1.5, 1.5 );
-	var circle2Material = new THREE.MeshBasicMaterial({color: 0xeb3434}); 
+
+	var circle2Geometry = new THREE.CircleGeometry( 0.75, 1.5 );
+	var circle2Material = new THREE.MeshBasicMaterial({color: 0xdb1222 }); 
 	var circle2 = new THREE.Mesh (circle2Geometry, circle2Material);
-	circle2.position.set(0,5.6,0.1);
+	circle2.position.set(0,5,0.1);
 	circle2.rotation.z = Math.PI/2;
 	///
-	
+
 	pointer = new THREE.Group();
 	pointer.add( box2 , circle2 );
 	
@@ -98,13 +126,42 @@ function init () {
 	clock.getDelta();
 }
 
+function change(){
+	if( !style ) return;
+	if(start){
+		angle-= 2*Math.PI/60;
+		second -= 1;
+		tg = 1 ;
+		setTimeout (change, 1000);
+	}
+	else tg = 0;
+}
+
 
 function animate() {
 	
 	var dt = clock.getDelta();
+	if( second<=0 && count>0){
+		play.play();
+		count-= dt;
+	}
+	if(start&&second>0){
+		if(!style){
+			angle -= 2*Math.PI*dt/60;
+			tg = 0;
+			second -= dt;
+		}
+		else if (tg===0 && style ) change();
+	}
 	
-	if(!tg)angle += 2*Math.PI*dt/60;
-	//console.log(dt);
+	if(!style){
+		$('#style').text ('quartz');
+	}
+	else{
+		$('#style').text ('continuous');
+	}
+	$('#second').text ( Math.abs(second.toFixed(0)) + ' seconds');
+	
 	pointer.rotation.z = -angle;
 	requestAnimationFrame(animate);
 	render();
@@ -112,9 +169,7 @@ function animate() {
 }
 
 function render() {
-	
 	renderer.render(scene, camera);
-	
 }
 
 
