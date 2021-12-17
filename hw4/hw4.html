@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+	overflow: hidden
+}
+#info {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00
+}
+</style>
+</head>
+<body> 
+
+<div id="info"> Homework 4<br>
+
+<script src="https://threejs.org/build/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script src="main.js"></script>
+
+
+<script>
+import { Candle } from "./candle.js";
+
+
+$('#toggle').click(function() {
+	flameOff = !flameOff;
+  if (flameOff) {
+  	clearInterval (flameInterval);
+    //flameMesh.material.visible = false;
+  } else {
+   	flameInterval = setInterval (textureAnimate, 100);
+    //flameMesh.material.visible = true;
+  }
+});
+
+var renderer,camera,scene;
+var candles;
+var flameOff = false;
+var meshes = [];
+
+var raycaster;
+var mouse = new THREE.Vector2();
+var pickables = [];
+
+function randomPosZX(min,max) {
+	let x = min + (max-min)*Math.random();
+	let z = min + (max-min)*Math.random();
+	
+	return new THREE.Vector3(x,0,z);
+}
+
+function onDocumentMouseDown(event) {
+	//  event.preventDefault();  // may not be necessary
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+	// find intersections
+	raycaster.setFromCamera(mouse, camera);
+	var intersects = raycaster.intersectObjects(meshes, true);
+	
+	if (intersects.length > 0) {
+	
+		intersects[0].object.material.visible = false;
+		//clearInterval (flameInterval);
+		setTimeout(function() { 
+			intersects[0].object.material.visible = true;
+		}, 3000); 
+		
+		for(let i = 0 ; i < 5 ;i++){
+			pickables[i].visible = false;
+		}
+		
+		setTimeout(function() { 
+			for(let i = 0 ; i < 5 ;i++){pickables[i].visible = true;}
+		}, 3000); 
+	}
+	
+
+}
+
+
+init();
+animate();
+
+function makeFlame2() {
+
+   var fire = new THREE.Group();
+  let loader = new THREE.TextureLoader();
+    // load a resource
+  loader.load(
+    // URL ...
+    'https://i.imgur.com/M2tr5Tm.png?1',
+    // onLoad ...
+    function(texture) {
+      // do something with the texture
+      // Plane with default texture coordinates [0,1]x[0,1]
+      var texMat = new THREE.MeshBasicMaterial({
+        map: texture,
+        alphaTest:0.5
+      });
+      var flameMesh = new THREE.Mesh(new THREE.PlaneGeometry(30,30), texMat);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+    	texture.repeat.set (1/3,1/3);
+      texture.offset.set (0,2/3);
+	  
+	  let light = new THREE.PointLight(0xf5db36);
+	  light.position.y = 25;
+	  fire.add(flameMesh,light);
+	  
+	  pickables.push(light);
+	  meshes.push(flameMesh);
+	  
+      flameMesh.position.y = 28;
+      
+    },
+		undefined, // onProgress
+    // onError ...
+    function(xhr) {
+      console.log('An error happened');
+    }
+  );
+  
+  return fire;
+}
+
+
+
+function makeCandle() {
+	
+	var body = new THREE.Mesh (new THREE.CylinderGeometry(5,5,20,6), new THREE.MeshNormalMaterial());
+	body.position.y = 10;
+	candles.add (body);
+
+	return body;
+}
+
+
+
+
+function textureAnimate() {
+	textureAnimate.count = (textureAnimate.count === undefined) ? 1 : textureAnimate.count;
+
+	for (let i = 0; i < 5; i++) {
+
+		if ( meshes[i]!== undefined) {
+
+			var texture = meshes[i].material.map;
+			//console.log (`${textureAnimate.count}: [${texture.offset.x},${texture.offset.y}]`);
+			//texture.offset.x += 1/3;
+	 
+			if (textureAnimate.count % 3 === 0) {
+				texture.offset.y -= 1/3;
+			}
+			textureAnimate.count++;
+		}
+	}
+}
+
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+
+
+</script>
+</body>
+</html>
