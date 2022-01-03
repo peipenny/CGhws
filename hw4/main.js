@@ -1,6 +1,3 @@
-import { Candle } from "./candle.js";
-
-
 function init(){
 
 	renderer = new THREE.WebGLRenderer({antialias:true});

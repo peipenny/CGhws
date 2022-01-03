@@ -1,4 +1,4 @@
-export class Candle {
+class Candle {
 
 	constructor(pos, mesh ,mesh2) {
 		this.mesh = mesh;

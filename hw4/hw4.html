@@ -24,22 +24,10 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script src="main.js"></script>
+<script src="candle.js"></script>
 
 
 <script>
-import { Candle } from "./candle.js";
-
-
-$('#toggle').click(function() {
-	flameOff = !flameOff;
-  if (flameOff) {
-  	clearInterval (flameInterval);
-    //flameMesh.material.visible = false;
-  } else {
-   	flameInterval = setInterval (textureAnimate, 100);
-    //flameMesh.material.visible = true;
-  }
-});
 
 var renderer,camera,scene;
 var candles;
